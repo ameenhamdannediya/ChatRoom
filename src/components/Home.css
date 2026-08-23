@@ -1,0 +1,411 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #000;
+  font-family: "Courier New", monospace;
+}
+
+.matrix-home {
+  min-height: 100vh;
+  width: 100%;
+  background: #000;
+  color: #00ff41;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  overflow: hidden;
+}
+
+.matrix-content {
+  width: min(90%, 600px);
+  text-align: center;
+}
+
+.matrix-title {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  letter-spacing: 8px;
+  margin: 0 0 20px;
+
+  text-shadow:
+    0 0 5px #00ff41,
+    0 0 15px #00ff41;
+
+  animation: flicker 3s infinite;
+}
+
+.matrix-line {
+  width: 100%;
+  height: 1px;
+  background: #00ff41;
+
+  box-shadow: 0 0 10px #00ff41;
+
+  margin-bottom: 50px;
+}
+
+.button-section {
+  margin-bottom: 45px;
+}
+
+.matrix-button {
+  width: 100%;
+  max-width: 400px;
+
+  padding: 16px 25px;
+
+  margin: 25px 0 0 0;
+  background: transparent;
+  color: #00ff41;
+
+  border: 1px solid #00ff41;
+
+  font-family: "Courier New", monospace;
+  font-size: 1rem;
+  font-weight: bold;
+  letter-spacing: 3px;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s,
+    color 0.2s,
+    box-shadow 0.2s,
+    transform 0.2s;
+}
+
+.matrix-button:hover {
+  background: #00ff41;
+  color: #000;
+
+  box-shadow:
+    0 0 5px #00ff41,
+    0 0 20px #00ff41,
+    0 0 40px #00ff41;
+
+  transform: scale(1.02);
+}
+
+.matrix-button:active {
+  transform: scale(0.98);
+}
+
+.button-description {
+  max-width: 450px;
+  margin: 15px auto 0;
+
+  color: #00aa2b;
+
+  font-size: 0.85rem;
+  line-height: 1.6;
+  letter-spacing: 1px;
+}
+
+@keyframes flicker {
+  0%, 19%, 21%, 63%, 64%, 65%, 100% {
+    opacity: 1;
+  }
+
+  20%, 62% {
+    opacity: 0.7;
+  }
+
+  63.5% {
+    opacity: 0.4;
+  }
+}
+
+@media (max-width: 500px) {
+  .matrix-title {
+    letter-spacing: 4px;
+  }
+
+  .matrix-line {
+    margin-bottom: 35px;
+  }
+
+  .button-section {
+    margin-bottom: 35px;
+  }
+}
+
+
+.username-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.username-section h2 {
+  letter-spacing: 4px;
+  font-size: 1.3rem;
+
+  text-shadow:
+    0 0 5px #00ff41,
+    0 0 15px #00ff41;
+
+  margin-bottom: 10px;
+}
+
+.matrix-input {
+  width: 100%;
+  max-width: 400px;
+
+  padding: 16px;
+
+  margin: 25px 0 0 0;
+
+  background: #000;
+  color: #00ff41;
+
+  border: 1px solid #00ff41;
+
+  outline: none;
+
+  font-family: "Courier New", monospace;
+  font-size: 1rem;
+  letter-spacing: 2px;
+
+  text-align: center;
+
+  box-shadow: 0 0 5px rgba(0, 255, 65, 0.3);
+}
+
+.matrix-input:focus {
+  box-shadow:
+    0 0 5px #00ff41,
+    0 0 15px rgba(0, 255, 65, 0.5);
+}
+
+.matrix-input::placeholder {
+  color: #006b1d;
+}
+
+.error-message {
+  color: #ff3333;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+  text-shadow: 0 0 5px #ff0000;
+}
+
+.matrix-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.back-button {
+  margin-top: 25px;
+
+  background: transparent;
+  border: none;
+
+  color: #007d20;
+
+  font-family: "Courier New", monospace;
+
+  cursor: pointer;
+
+  letter-spacing: 2px;
+}
+
+.back-button:hover {
+  color: #00ff41;
+}
+
+/* =========================================
+   HOME 80 / 20 LAYOUT
+========================================= */
+
+.matrix-home {
+  min-height: 100vh;
+
+  display: flex;
+
+  background: #000;
+
+  color: #00ff41;
+}
+
+
+.home-left {
+  width: 80%;
+
+  min-height: 100vh;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+}
+
+
+/* =========================================
+   PUBLIC CHATS
+========================================= */
+
+.public-chats {
+  width: 20%;
+
+  min-width: 220px;
+
+  min-height: 100vh;
+
+  box-sizing: border-box;
+
+  padding: 30px 20px;
+
+  border-left: 1px solid #003d12;
+
+  background: rgba(0, 10, 3, 0.5);
+
+  overflow-y: auto;
+}
+
+
+.public-title {
+  color: #00ff41;
+
+  font-size: 0.85rem;
+
+  font-weight: bold;
+
+  letter-spacing: 2px;
+
+  text-shadow:
+    0 0 6px #00ff41;
+}
+
+
+.public-line {
+  width: 100%;
+
+  height: 1px;
+
+  background: #006b1d;
+
+  margin: 12px 0 20px;
+}
+
+
+.no-public-chats {
+  color: #006b1d;
+
+  font-size: 0.7rem;
+
+  line-height: 1.8;
+}
+
+
+/* =========================================
+   PUBLIC CHAT ITEM
+========================================= */
+
+.public-chat {
+  width: 100%;
+
+  display: block;
+
+  box-sizing: border-box;
+
+  text-align: left;
+
+  background: transparent;
+
+  border: 0;
+
+  border-bottom: 1px solid #003d12;
+
+  padding: 12px 5px;
+
+  margin-bottom: 5px;
+
+  color: #00aa2b;
+
+  font-family:
+    "Courier New",
+    Courier,
+    monospace;
+
+  cursor: pointer;
+
+  transition: 0.15s;
+}
+
+
+.public-chat:hover {
+
+  color: #00ff41;
+
+  background:
+    rgba(0, 255, 65, 0.04);
+
+  text-shadow:
+    0 0 5px #00ff41;
+}
+
+
+.public-chat-name {
+
+  font-size: 0.75rem;
+
+  margin-bottom: 5px;
+
+  overflow-wrap: anywhere;
+}
+
+
+.public-chat-id {
+
+  font-size: 0.6rem;
+
+  color: #006b1d;
+}
+
+
+.public-chat:hover
+.public-chat-id {
+
+  color: #00aa2b;
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 700px) {
+
+  .matrix-home {
+    flex-direction: column;
+  }
+
+
+  .home-left {
+    width: 100%;
+
+    min-height: auto;
+
+    padding: 40px 20px;
+
+    box-sizing: border-box;
+  }
+
+
+  .public-chats {
+    width: 100%;
+
+    min-width: 0;
+
+    min-height: auto;
+
+    border-left: 0;
+
+    border-top: 1px solid #003d12;
+  }
+
+}

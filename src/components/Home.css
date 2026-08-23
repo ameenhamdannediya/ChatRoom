@@ -409,3 +409,28 @@ body {
   }
 
 }
+
+.admin-join-toggle {
+  margin-top: 15px;
+
+  background: transparent;
+  border: none;
+
+  color: #007d20;
+
+  font-family: "Courier New", monospace;
+
+  cursor: pointer;
+
+  letter-spacing: 1px;
+}
+
+.admin-join-toggle:hover {
+  color: #00ff41;
+
+  text-shadow:
+    0 0 5px #00ff41;
+}
+.admin-toggle-button {
+  margin-top: 0;
+}

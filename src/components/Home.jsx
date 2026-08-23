@@ -14,6 +14,7 @@ import {
   onValue,
   get,
   set,
+  remove,
 } from "firebase/database";
 
 import { auth, db } from "../firebase";
@@ -43,6 +44,36 @@ function generateRoomId() {
   }
 
   return id;
+}
+
+
+// =========================================
+// GENERATE 4 CHARACTER CREATOR KEY
+// =========================================
+//
+// Avoids confusing characters:
+// 0 / O
+// 1 / I
+// =========================================
+
+function generateCreatorKey() {
+
+  const characters =
+    "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+  let key = "";
+
+  for (let i = 0; i < 4; i++) {
+
+    key += characters.charAt(
+      Math.floor(
+        Math.random() * characters.length
+      )
+    );
+
+  }
+
+  return key;
 }
 
 
@@ -107,6 +138,12 @@ export default function Home() {
   const [sessionId, setSessionId] =
     useState("");
 
+  const [creatorKey, setCreatorKey] =
+    useState("");
+
+  const [joinAsAdmin, setJoinAsAdmin] =
+    useState(false);
+
   const [loading, setLoading] =
     useState(false);
 
@@ -127,6 +164,9 @@ export default function Home() {
   const sessionIdRef =
     useRef(null);
 
+  const creatorKeyRef =
+    useRef(null);
+
 
   // =========================================
   // LISTEN FOR PUBLIC CHATS
@@ -140,7 +180,9 @@ export default function Home() {
 
     const unsubscribe =
       onValue(
+
         publicChatsRef,
+
         (snapshot) => {
 
           if (!snapshot.exists()) {
@@ -148,6 +190,7 @@ export default function Home() {
             setPublicChats([]);
 
             return;
+
           }
 
 
@@ -170,14 +213,15 @@ export default function Home() {
 
         },
 
-        (error) => {
+        (firebaseError) => {
 
           console.error(
             "Public chats error:",
-            error
+            firebaseError
           );
 
         }
+
       );
 
 
@@ -204,6 +248,10 @@ export default function Home() {
 
     setSessionId("");
 
+    setCreatorKey("");
+
+    setJoinAsAdmin(false);
+
     setMode("create");
 
     setShowUsername(true);
@@ -225,9 +273,30 @@ export default function Home() {
 
     setSessionId("");
 
+    setCreatorKey("");
+
+    setJoinAsAdmin(false);
+
     setMode("join");
 
     setShowUsername(true);
+
+  }
+
+
+  // =========================================
+  // TOGGLE ADMIN JOIN
+  // =========================================
+
+  function toggleAdminJoin() {
+
+    setError("");
+
+    setJoinAsAdmin(
+      (current) => !current
+    );
+
+    setCreatorKey("");
 
   }
 
@@ -256,6 +325,7 @@ export default function Home() {
       );
 
       return;
+
     }
 
 
@@ -266,6 +336,7 @@ export default function Home() {
       );
 
       return;
+
     }
 
 
@@ -280,6 +351,7 @@ export default function Home() {
       );
 
       return;
+
     }
 
 
@@ -290,6 +362,7 @@ export default function Home() {
       );
 
       return;
+
     }
 
 
@@ -310,6 +383,14 @@ export default function Home() {
 
       const user =
         userCredential.user;
+
+
+      // =====================================
+      // GENERATE CREATOR KEY
+      // =====================================
+
+      const newCreatorKey =
+        generateCreatorKey();
 
 
       // =====================================
@@ -335,6 +416,9 @@ export default function Home() {
 
           adminUid:
             user.uid,
+
+          adminUsername:
+            name,
 
           active:
             true,
@@ -362,10 +446,6 @@ export default function Home() {
         };
 
 
-        // ===================================
-        // TRY CREATING ROOM
-        // ===================================
-
         created =
           await createUniqueSession(
             roomId,
@@ -373,6 +453,30 @@ export default function Home() {
           );
 
       }
+
+
+      // =====================================
+      // SAVE PRIVATE CREATOR INFORMATION
+      // =====================================
+
+      await set(
+
+        ref(
+          db,
+          `adminSecrets/${roomId}`
+        ),
+
+        {
+
+          username:
+            name,
+
+          creatorKey:
+            newCreatorKey,
+
+        }
+
+      );
 
 
       // =====================================
@@ -393,6 +497,9 @@ export default function Home() {
 
           isAdmin:
             true,
+
+          creatorKey:
+            newCreatorKey,
 
         })
 
@@ -423,7 +530,6 @@ export default function Home() {
 
       );
 
-
     } finally {
 
       setLoading(false);
@@ -445,6 +551,9 @@ export default function Home() {
     const roomId =
       sessionId.trim().toUpperCase();
 
+    const enteredCreatorKey =
+      creatorKey.trim().toUpperCase();
+
 
     // =====================================
     // VALIDATE USERNAME
@@ -457,6 +566,7 @@ export default function Home() {
       );
 
       return;
+
     }
 
 
@@ -467,6 +577,7 @@ export default function Home() {
       );
 
       return;
+
     }
 
 
@@ -481,6 +592,7 @@ export default function Home() {
       );
 
       return;
+
     }
 
 
@@ -491,6 +603,41 @@ export default function Home() {
       );
 
       return;
+
+    }
+
+
+    // =====================================
+    // ADMIN INPUT VALIDATION
+    // =====================================
+
+    if (joinAsAdmin) {
+
+      if (!enteredCreatorKey) {
+
+        setError(
+          "Please enter the creator key."
+        );
+
+        return;
+
+      }
+
+
+      if (
+        !/^[A-Z0-9]{4}$/.test(
+          enteredCreatorKey
+        )
+      ) {
+
+        setError(
+          "Creator key must be 4 letters/numbers."
+        );
+
+        return;
+
+      }
+
     }
 
 
@@ -513,8 +660,19 @@ export default function Home() {
         userCredential.user;
 
 
+      console.log(
+        "JOIN UID:",
+        user.uid
+      );
+
+      console.log(
+        "JOIN AS ADMIN:",
+        joinAsAdmin
+      );
+
+
       // =====================================
-      // CHECK IF ROOM EXISTS
+      // CHECK ROOM
       // =====================================
 
       const roomRef =
@@ -535,6 +693,7 @@ export default function Home() {
         );
 
         return;
+
       }
 
 
@@ -543,7 +702,7 @@ export default function Home() {
 
 
       // =====================================
-      // CHECK IF ROOM IS ACTIVE
+      // CHECK ACTIVE
       // =====================================
 
       if (room.active === false) {
@@ -553,6 +712,192 @@ export default function Home() {
         );
 
         return;
+
+      }
+
+
+      // =====================================
+      // ADMIN RECOVERY
+      // =====================================
+      //
+      // IMPORTANT:
+      //
+      // We DO NOT read adminSecrets here.
+      //
+      // Firebase Rules will verify:
+      //
+      // username === adminSecrets.username
+      //
+      // creatorKey === adminSecrets.creatorKey
+      //
+      // =====================================
+
+      let isAdmin = false;
+
+      let verifiedCreatorKey = "";
+
+
+      if (joinAsAdmin) {
+
+        console.log(
+          "Submitting admin recovery claim..."
+        );
+
+
+        // ===================================
+        // CREATE TEMPORARY ADMIN CLAIM
+        // ===================================
+
+        const claimRef =
+          ref(
+            db,
+            `adminClaims/${roomId}/${user.uid}`
+          );
+
+
+        try {
+
+          await set(
+
+            claimRef,
+
+            {
+
+              username:
+                name,
+
+              creatorKey:
+                enteredCreatorKey,
+
+            }
+
+          );
+
+
+          console.log(
+            "ADMIN CLAIM ACCEPTED"
+          );
+
+
+        } catch (claimError) {
+
+          console.error(
+            "ADMIN CLAIM REJECTED:",
+            claimError
+          );
+
+
+          setError(
+            "INCORRECT CREATOR USERNAME OR KEY."
+          );
+
+          return;
+
+        }
+
+
+        // ===================================
+        // TAKE ADMIN OWNERSHIP
+        // ===================================
+
+        try {
+
+          await set(
+
+            ref(
+              db,
+              `sessions/${roomId}/adminUid`
+            ),
+
+            user.uid
+
+          );
+
+
+          console.log(
+            "ADMIN UID UPDATED"
+          );
+
+
+        } catch (adminError) {
+
+          console.error(
+            "ADMIN UID UPDATE FAILED:",
+            adminError
+          );
+
+
+          // Remove temporary claim
+          try {
+
+            await remove(
+              claimRef
+            );
+
+          } catch (cleanupError) {
+
+            console.error(
+              "Claim cleanup error:",
+              cleanupError
+            );
+
+          }
+
+
+          setError(
+            "COULD NOT TAKE ADMIN CONTROL. CHECK FIREBASE RULES."
+          );
+
+          return;
+
+        }
+
+
+        // ===================================
+        // SAVE ADMIN USERNAME
+        // ===================================
+
+        await set(
+
+          ref(
+            db,
+            `sessions/${roomId}/adminUsername`
+          ),
+
+          name
+
+        );
+
+
+        // ===================================
+        // ADMIN SUCCESS
+        // ===================================
+
+        isAdmin = true;
+
+        verifiedCreatorKey =
+          enteredCreatorKey;
+
+
+        // ===================================
+        // REMOVE TEMPORARY CLAIM
+        // ===================================
+
+        try {
+
+          await remove(
+            claimRef
+          );
+
+        } catch (cleanupError) {
+
+          console.error(
+            "Claim cleanup error:",
+            cleanupError
+          );
+
+        }
+
       }
 
 
@@ -568,7 +913,9 @@ export default function Home() {
 
 
       await set(
+
         userRef,
+
         {
 
           username:
@@ -578,6 +925,7 @@ export default function Home() {
             Date.now(),
 
         }
+
       );
 
 
@@ -598,10 +946,24 @@ export default function Home() {
             name,
 
           isAdmin:
-            false,
+            isAdmin,
+
+          creatorKey:
+            isAdmin
+              ? verifiedCreatorKey
+              : "",
 
         })
 
+      );
+
+
+      console.log(
+        "JOIN SUCCESS:",
+        {
+          roomId,
+          isAdmin,
+        }
       );
 
 
@@ -622,13 +984,25 @@ export default function Home() {
       );
 
 
-      setError(
+      if (
+        error.code ===
+        "PERMISSION_DENIED"
+      ) {
 
-        error.message ||
-        "Could not join session."
+        setError(
+          "FIREBASE PERMISSION DENIED. CHECK YOUR DATABASE RULES."
+        );
 
-      );
+      } else {
 
+        setError(
+
+          error.message ||
+          "Could not join session."
+
+        );
+
+      }
 
     } finally {
 
@@ -643,12 +1017,15 @@ export default function Home() {
   // JOIN PUBLIC CHAT
   // =========================================
 
-  async function joinPublicChat(roomId) {
-
-    // Put the ID into the form and
-    // use the same join process.
+  function joinPublicChat(roomId) {
 
     setSessionId(roomId);
+
+    setUsername("");
+
+    setCreatorKey("");
+
+    setJoinAsAdmin(false);
 
     setMode("join");
 
@@ -773,7 +1150,37 @@ export default function Home() {
 
                   ? "Choose a username and chat name for this session."
 
-                  : "Enter your username and the session ID."}
+                  : (
+
+                    <>
+
+                      Enter your username and
+                      the session ID.
+
+                      <br />
+
+                      or{" "}
+
+
+                      <button
+                        type="button"
+                        className="back-button"
+                        onClick={toggleAdminJoin}
+                        disabled={loading}
+                        style={{
+                          marginTop: 0
+                        }}
+                      >
+
+                        {joinAsAdmin
+                          ? "JOIN AS MEMBER"
+                          : "JOIN AS ADMIN"}
+
+                      </button>
+
+                    </>
+
+                  )}
 
               </p>
 
@@ -795,7 +1202,9 @@ export default function Home() {
                 maxLength={30}
 
                 onChange={(e) =>
-                  setUsername(e.target.value)
+                  setUsername(
+                    e.target.value
+                  )
                 }
 
                 onKeyDown={(e) => {
@@ -804,7 +1213,10 @@ export default function Home() {
 
                     e.preventDefault();
 
-                    if (mode === "create") {
+
+                    if (
+                      mode === "create"
+                    ) {
 
                       chatNameRef.current?.focus();
 
@@ -846,12 +1258,16 @@ export default function Home() {
                   maxLength={50}
 
                   onChange={(e) =>
-                    setChatName(e.target.value)
+                    setChatName(
+                      e.target.value
+                    )
                   }
 
                   onKeyDown={(e) => {
 
-                    if (e.key === "Enter") {
+                    if (
+                      e.key === "Enter"
+                    ) {
 
                       e.preventDefault();
 
@@ -896,7 +1312,68 @@ export default function Home() {
 
                   onKeyDown={(e) => {
 
-                    if (e.key === "Enter") {
+                    if (
+                      e.key === "Enter"
+                    ) {
+
+                      e.preventDefault();
+
+
+                      if (
+                        joinAsAdmin
+                      ) {
+
+                        creatorKeyRef.current?.focus();
+
+                      } else {
+
+                        confirmJoinSession();
+
+                      }
+
+                    }
+
+                  }}
+
+                  disabled={loading}
+
+                />
+
+              )}
+
+
+              {/* ===========================
+                  CREATOR KEY
+              =========================== */}
+
+              {mode === "join" &&
+                joinAsAdmin && (
+
+                <input
+
+                  ref={creatorKeyRef}
+
+                  className="matrix-input"
+
+                  type="text"
+
+                  placeholder="CREATOR KEY"
+
+                  value={creatorKey}
+
+                  maxLength={4}
+
+                  onChange={(e) =>
+                    setCreatorKey(
+                      e.target.value.toUpperCase()
+                    )
+                  }
+
+                  onKeyDown={(e) => {
+
+                    if (
+                      e.key === "Enter"
+                    ) {
 
                       e.preventDefault();
 
@@ -929,7 +1406,7 @@ export default function Home() {
 
 
               {/* ===========================
-                  ENTER
+                  ENTER CHAT
               =========================== */}
 
               <button
@@ -951,11 +1428,7 @@ export default function Home() {
               >
 
                 {loading
-
-                  ? mode === "create"
-                    ? "CREATING..."
-                    : "JOINING..."
-
+                  ? "PLEASE WAIT..."
                   : "ENTER CHAT"}
 
               </button>
@@ -978,6 +1451,10 @@ export default function Home() {
                   setChatName("");
 
                   setSessionId("");
+
+                  setCreatorKey("");
+
+                  setJoinAsAdmin(false);
 
                   setError("");
 
@@ -1032,7 +1509,6 @@ export default function Home() {
 
         ) : (
 
-
           <div className="public-chat-list">
 
             {publicChats.map((chat) => (
@@ -1051,7 +1527,6 @@ export default function Home() {
 
               >
 
-
                 <div className="public-chat-name">
 
                   &gt; {chat.chatName}
@@ -1064,7 +1539,6 @@ export default function Home() {
                   SESSION:{chat.roomId}
 
                 </div>
-
 
               </button>
 

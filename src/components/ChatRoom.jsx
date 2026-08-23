@@ -41,6 +41,8 @@ export default function ChatRoom() {
 
   const [isAdmin, setIsAdmin] = useState(false);
 
+  const [creatorKey, setCreatorKey] = useState("");
+
   const [isPublished, setIsPublished] = useState(false);
 
   const [loading, setLoading] = useState(true);
@@ -65,65 +67,109 @@ export default function ChatRoom() {
 
   useEffect(() => {
 
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (user) => {
+    const unsubscribe =
+      onAuthStateChanged(
+        auth,
+        (user) => {
 
-        if (!user) {
+          if (!user) {
 
-          navigate("/ChatRoom");
+            navigate("/ChatRoom");
 
-          return;
+            return;
+          }
+
+
+          setUid(user.uid);
+
+
+          // ===================================
+          // LOAD LOCAL SESSION
+          // ===================================
+
+          const storedData =
+            sessionStorage.getItem(
+              `chatroom_${roomId}`
+            );
+
+
+          if (!storedData) {
+
+            navigate("/ChatRoom");
+
+            return;
+          }
+
+
+          try {
+
+            const data =
+              JSON.parse(storedData);
+
+
+            // =================================
+            // USERNAME
+            // =================================
+
+            setUsername(
+              data.username || ""
+            );
+
+
+            // =================================
+            // ADMIN STATUS
+            // =================================
+
+            setIsAdmin(
+              data.isAdmin === true
+            );
+
+
+            // =================================
+            // CREATOR KEY
+            // =================================
+            //
+            // The key is saved in sessionStorage
+            // when the room is created or when
+            // admin recovery succeeds.
+            // =================================
+
+            if (
+              data.isAdmin === true &&
+              data.creatorKey
+            ) {
+
+              setCreatorKey(
+                data.creatorKey
+              );
+
+            } else {
+
+              setCreatorKey("");
+
+            }
+
+
+          } catch (error) {
+
+            console.error(
+              "Session data error:",
+              error
+            );
+
+
+            navigate("/ChatRoom");
+
+          }
+
         }
-
-
-        setUid(user.uid);
-
-
-        const storedData =
-          sessionStorage.getItem(
-            `chatroom_${roomId}`
-          );
-
-
-        if (!storedData) {
-
-          navigate("/ChatRoom");
-
-          return;
-        }
-
-
-        try {
-
-          const data =
-            JSON.parse(storedData);
-
-
-          setUsername(
-            data.username || ""
-          );
-
-
-          setIsAdmin(
-            data.isAdmin === true
-          );
-
-
-        } catch (error) {
-
-          console.error(error);
-
-          navigate("/ChatRoom");
-
-        }
-
-      }
-    );
+      );
 
 
     return () => {
+
       unsubscribe();
+
     };
 
   }, [roomId, navigate]);
@@ -205,10 +251,74 @@ export default function ChatRoom() {
 
           if (auth.currentUser) {
 
-            setIsAdmin(
+            const currentlyAdmin =
               auth.currentUser.uid ===
-              room.adminUid
+              room.adminUid;
+
+
+            setIsAdmin(
+              currentlyAdmin
             );
+
+
+            // =================================
+            // IF ADMIN
+            // =================================
+            //
+            // Keep the locally stored creator
+            // key.
+            // =================================
+
+            if (currentlyAdmin) {
+
+              const storedData =
+                sessionStorage.getItem(
+                  `chatroom_${roomId}`
+                );
+
+
+              if (storedData) {
+
+                try {
+
+                  const data =
+                    JSON.parse(
+                      storedData
+                    );
+
+
+                  if (
+                    data.creatorKey
+                  ) {
+
+                    setCreatorKey(
+                      data.creatorKey
+                    );
+
+                  }
+
+                } catch (error) {
+
+                  console.error(
+                    "Creator key session error:",
+                    error
+                  );
+
+                }
+
+              }
+
+            }
+
+            // =================================
+            // NOT ADMIN
+            // =================================
+
+            else {
+
+              setCreatorKey("");
+
+            }
 
           }
 
@@ -226,8 +336,11 @@ export default function ChatRoom() {
 
               .map(
                 ([id, data]) => ({
+
                   id,
+
                   ...data,
+
                 })
               )
 
@@ -269,7 +382,9 @@ export default function ChatRoom() {
 
 
     return () => {
+
       unsubscribe();
+
     };
 
   }, [roomId, navigate]);
@@ -319,7 +434,9 @@ export default function ChatRoom() {
 
 
     return () => {
+
       unsubscribe();
+
     };
 
   }, [roomId]);
@@ -361,6 +478,35 @@ export default function ChatRoom() {
 
 
   // =========================================
+  // COPY TO CLIPBOARD
+  // =========================================
+
+  async function copyToClipboard(value) {
+
+    if (!value) {
+      return;
+    }
+
+
+    try {
+
+      await navigator.clipboard.writeText(
+        value
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Clipboard error:",
+        error
+      );
+
+    }
+
+  }
+
+
+  // =========================================
   // SEND MESSAGE
   // =========================================
 
@@ -373,14 +519,10 @@ export default function ChatRoom() {
       message.trim();
 
 
-    // Don't send empty message
-
     if (!text) {
       return;
     }
 
-
-    // Make sure user exists
 
     if (
       !uid ||
@@ -391,8 +533,6 @@ export default function ChatRoom() {
 
     }
 
-
-    // Prevent duplicate sends
 
     if (sending) {
       return;
@@ -421,21 +561,24 @@ export default function ChatRoom() {
         newMessageRef,
         {
 
-          type: "text",
+          type:
+            "text",
 
-          uid: uid,
+          uid:
+            uid,
 
-          username: username,
+          username:
+            username,
 
-          text: text,
+          text:
+            text,
 
-          timestamp: Date.now(),
+          timestamp:
+            Date.now(),
 
         }
       );
 
-
-      // Clear input
 
       setMessage("");
 
@@ -487,10 +630,6 @@ export default function ChatRoom() {
         );
 
 
-      // =====================================
-      // UNPUBLISH
-      // =====================================
-
       if (isPublished) {
 
         await remove(
@@ -499,20 +638,17 @@ export default function ChatRoom() {
 
       }
 
-
-      // =====================================
-      // PUBLISH
-      // =====================================
-
       else {
 
         await set(
           publicChatRef,
           {
 
-            roomId: roomId,
+            roomId:
+              roomId,
 
-            chatName: chatName,
+            chatName:
+              chatName,
 
           }
         );
@@ -587,10 +723,6 @@ export default function ChatRoom() {
       setError("");
 
 
-      // =====================================
-      // DELETE ROOM + PUBLIC LISTING
-      // =====================================
-
       const updates = {};
 
 
@@ -604,24 +736,26 @@ export default function ChatRoom() {
       ] = null;
 
 
+      updates[
+        `adminSecrets/${roomId}`
+      ] = null;
+
+
+      updates[
+        `adminClaims/${roomId}`
+      ] = null;
+
+
       await update(
         ref(db),
         updates
       );
 
 
-      // =====================================
-      // REMOVE LOCAL SESSION
-      // =====================================
-
       sessionStorage.removeItem(
         `chatroom_${roomId}`
       );
 
-
-      // =====================================
-      // GO HOME
-      // =====================================
 
       navigate("/ChatRoom");
 
@@ -881,73 +1015,140 @@ export default function ChatRoom() {
           </div>
 
 
-          <div className="sidebar-value">
+          <button
+            type="button"
+            className="sidebar-copy-value"
+            onClick={() =>
+              copyToClipboard(roomId)
+            }
+            title="Copy session ID"
+          >
 
             {roomId}
+
+          </button>
+
+
+          {/* =================================
+              CREATOR KEY
+              ADMIN ONLY
+          ================================= */}
+
+          {isAdmin && (
+
+            <>
+
+              <div className="sidebar-label creator-key-label">
+
+                CREATOR KEY
+
+              </div>
+
+
+              {creatorKey ? (
+
+                <button
+                  type="button"
+                  className="sidebar-copy-value creator-key-value"
+                  onClick={() =>
+                    copyToClipboard(
+                      creatorKey
+                    )
+                  }
+                  title="Copy creator key"
+                >
+
+                  {creatorKey}
+
+                </button>
+
+              ) : (
+
+                <div className="sidebar-value">
+
+                  KEY NOT AVAILABLE
+
+                </div>
+
+              )}
+
+            </>
+
+          )}
+
+        </div>
+
+
+        {/* ===================================
+            USER
+        =================================== */}
+
+        <div className="sidebar-section">
+
+          <div className="sidebar-label">
+
+            USER
+
+          </div>
+
+
+          <div className="sidebar-value">
+
+            {username}{" "}
+
+            {isAdmin && (
+
+              <span className="admin-tag">
+
+                [ADMIN]
+
+              </span>
+
+            )}
 
           </div>
 
         </div>
 
 
-       {/* ===================================
-    USER
-=================================== */}
+        {/* ===================================
+            STATUS
+        =================================== */}
 
-<div className="sidebar-section">
+        <div className="sidebar-section">
 
-  <div className="sidebar-label">
+          <div className="sidebar-label">
 
-    USER
+            STATUS
 
-  </div>
-
-
-  <div className="sidebar-value">
-
-    {username}{" "}
-
-    {isAdmin && (
-      <span className="admin-tag">
-        [ADMIN]
-      </span>
-    )}
-
-  </div>
-
-</div>
+          </div>
 
 
-       {/* ===================================
-    STATUS
-=================================== */}
+          <div className="sidebar-value">
 
-<div className="sidebar-section">
+            ONLINE{" "}
 
-  <div className="sidebar-label">
+            {isPublished ? (
 
-    STATUS
+              <span className="visibility-tag">
 
-  </div>
+                [PUBLIC]
 
+              </span>
 
-  <div className="sidebar-value">
+            ) : (
 
-    ONLINE{" "}
+              <span className="visibility-tag">
 
-    {isPublished ? (
-      <span className="visibility-tag">
-        [PUBLIC]
-      </span>
-    ) : (
-      <span className="visibility-tag">
-        [PRIVATE]
-      </span>
-    )}
+                [PRIVATE]
 
-  </div>
+              </span>
 
-</div>
+            )}
+
+          </div>
+
+        </div>
 
 
         {/* ===================================

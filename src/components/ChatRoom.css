@@ -640,3 +640,12 @@ body {
   text-shadow:
     0 0 5px #00ff41;
 }
+
+.sidebar-copy-value{
+  color: #00ff41;
+  word-break: break-word;
+  font-size: .9rem;
+  background: transparent;
+  border: none;
+
+}

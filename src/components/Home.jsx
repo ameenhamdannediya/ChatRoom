@@ -15,6 +15,7 @@ import {
   get,
   set,
   remove,
+  update,
 } from "firebase/database";
 
 import { auth, db } from "../firebase";
@@ -50,11 +51,6 @@ function generateRoomId() {
 // =========================================
 // GENERATE 4 CHARACTER CREATOR KEY
 // =========================================
-//
-// Avoids confusing characters:
-// 0 / O
-// 1 / I
-// =========================================
 
 function generateCreatorKey() {
 
@@ -86,25 +82,25 @@ async function createUniqueSession(
   sessionData
 ) {
 
-  const roomRef = ref(
-    db,
-    `sessions/${roomId}`
-  );
+  const roomRef =
+    ref(
+      db,
+      `sessions/${roomId}`
+    );
 
-  const result = await runTransaction(
-    roomRef,
-    (currentData) => {
+  const result =
+    await runTransaction(
+      roomRef,
+      (currentData) => {
 
-      // Room already exists
-      if (currentData !== null) {
-        return;
+        if (currentData !== null) {
+          return;
+        }
+
+        return sessionData;
+
       }
-
-      // Room doesn't exist
-      return sessionData;
-
-    }
-  );
+    );
 
   return result.committed;
 }
@@ -116,7 +112,8 @@ async function createUniqueSession(
 
 export default function Home() {
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
 
   // =========================================
@@ -175,7 +172,10 @@ export default function Home() {
   useEffect(() => {
 
     const publicChatsRef =
-      ref(db, "publicChats");
+      ref(
+        db,
+        "publicChats"
+      );
 
 
     const unsubscribe =
@@ -314,10 +314,6 @@ export default function Home() {
       chatName.trim();
 
 
-    // =====================================
-    // VALIDATE USERNAME
-    // =====================================
-
     if (!name) {
 
       setError(
@@ -339,10 +335,6 @@ export default function Home() {
 
     }
 
-
-    // =====================================
-    // VALIDATE CHAT NAME
-    // =====================================
 
     if (!roomName) {
 
@@ -374,7 +366,7 @@ export default function Home() {
 
 
       // =====================================
-      // FIREBASE ANONYMOUS LOGIN
+      // FIREBASE LOGIN
       // =====================================
 
       const userCredential =
@@ -394,7 +386,7 @@ export default function Home() {
 
 
       // =====================================
-      // FIND UNIQUE ROOM ID
+      // FIND UNIQUE ROOM
       // =====================================
 
       let roomId;
@@ -408,9 +400,9 @@ export default function Home() {
           generateRoomId();
 
 
-        // ===================================
-        // SESSION DATA
-        // ===================================
+        const now =
+          Date.now();
+
 
         const sessionData = {
 
@@ -427,7 +419,7 @@ export default function Home() {
             roomName,
 
           createdAt:
-            Date.now(),
+            now,
 
           users: {
 
@@ -437,7 +429,7 @@ export default function Home() {
                 name,
 
               joinedAt:
-                Date.now(),
+                now,
 
             },
 
@@ -456,7 +448,7 @@ export default function Home() {
 
 
       // =====================================
-      // SAVE PRIVATE CREATOR INFORMATION
+      // SAVE CREATOR INFORMATION
       // =====================================
 
       await set(
@@ -507,7 +499,7 @@ export default function Home() {
 
 
       // =====================================
-      // GO TO CHAT ROOM
+      // ENTER ROOM
       // =====================================
 
       navigate(
@@ -529,6 +521,7 @@ export default function Home() {
         "Could not create session."
 
       );
+
 
     } finally {
 
@@ -556,7 +549,7 @@ export default function Home() {
 
 
     // =====================================
-    // VALIDATE USERNAME
+    // USERNAME VALIDATION
     // =====================================
 
     if (!name) {
@@ -582,7 +575,7 @@ export default function Home() {
 
 
     // =====================================
-    // VALIDATE SESSION ID
+    // ROOM ID VALIDATION
     // =====================================
 
     if (!roomId) {
@@ -649,7 +642,7 @@ export default function Home() {
 
 
       // =====================================
-      // FIREBASE ANONYMOUS LOGIN
+      // FIREBASE LOGIN
       // =====================================
 
       const userCredential =
@@ -665,6 +658,7 @@ export default function Home() {
         user.uid
       );
 
+
       console.log(
         "JOIN AS ADMIN:",
         joinAsAdmin
@@ -672,7 +666,7 @@ export default function Home() {
 
 
       // =====================================
-      // CHECK ROOM
+      // GET ROOM
       // =====================================
 
       const roomRef =
@@ -717,25 +711,17 @@ export default function Home() {
 
 
       // =====================================
-      // ADMIN RECOVERY
-      // =====================================
-      //
-      // IMPORTANT:
-      //
-      // We DO NOT read adminSecrets here.
-      //
-      // Firebase Rules will verify:
-      //
-      // username === adminSecrets.username
-      //
-      // creatorKey === adminSecrets.creatorKey
-      //
+      // DEFAULT MEMBER
       // =====================================
 
       let isAdmin = false;
 
       let verifiedCreatorKey = "";
 
+
+      // =====================================
+      // ADMIN RECOVERY
+      // =====================================
 
       if (joinAsAdmin) {
 
@@ -744,16 +730,16 @@ export default function Home() {
         );
 
 
-        // ===================================
-        // CREATE TEMPORARY ADMIN CLAIM
-        // ===================================
-
         const claimRef =
           ref(
             db,
             `adminClaims/${roomId}/${user.uid}`
           );
 
+
+        // ===================================
+        // CREATE ADMIN CLAIM
+        // ===================================
 
         try {
 
@@ -778,7 +764,6 @@ export default function Home() {
             "ADMIN CLAIM ACCEPTED"
           );
 
-
         } catch (claimError) {
 
           console.error(
@@ -801,6 +786,17 @@ export default function Home() {
         // ===================================
 
         try {
+
+          /*
+           * IMPORTANT:
+           *
+           * We ONLY update adminUid here.
+           *
+           * Do NOT write adminUsername separately.
+           *
+           * Your Firebase rules already use
+           * adminUid as the actual ownership field.
+           */
 
           await set(
 
@@ -827,7 +823,6 @@ export default function Home() {
           );
 
 
-          // Remove temporary claim
           try {
 
             await remove(
@@ -851,22 +846,6 @@ export default function Home() {
           return;
 
         }
-
-
-        // ===================================
-        // SAVE ADMIN USERNAME
-        // ===================================
-
-        await set(
-
-          ref(
-            db,
-            `sessions/${roomId}/adminUsername`
-          ),
-
-          name
-
-        );
 
 
         // ===================================
@@ -902,7 +881,7 @@ export default function Home() {
 
 
       // =====================================
-      // ADD USER TO ROOM
+      // ADD / UPDATE USER
       // =====================================
 
       const userRef =
@@ -968,7 +947,7 @@ export default function Home() {
 
 
       // =====================================
-      // GO TO CHAT ROOM
+      // ENTER ROOM
       // =====================================
 
       navigate(

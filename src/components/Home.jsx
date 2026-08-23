@@ -4,9 +4,13 @@ import {
   useState,
 } from "react";
 
-import { useNavigate } from "react-router-dom";
+import {
+  useNavigate,
+} from "react-router-dom";
 
-import { signInAnonymously } from "firebase/auth";
+import {
+  signInAnonymously,
+} from "firebase/auth";
 
 import {
   ref,
@@ -15,10 +19,12 @@ import {
   get,
   set,
   remove,
-  update,
 } from "firebase/database";
 
-import { auth, db } from "../firebase";
+import {
+  auth,
+  db,
+} from "../firebase";
 
 import "./Home.css";
 
@@ -38,7 +44,8 @@ function generateRoomId() {
 
     id += characters.charAt(
       Math.floor(
-        Math.random() * characters.length
+        Math.random() *
+        characters.length
       )
     );
 
@@ -63,7 +70,8 @@ function generateCreatorKey() {
 
     key += characters.charAt(
       Math.floor(
-        Math.random() * characters.length
+        Math.random() *
+        characters.length
       )
     );
 
@@ -74,7 +82,7 @@ function generateCreatorKey() {
 
 
 // =========================================
-// TRY TO CREATE ROOM
+// CREATE UNIQUE ROOM
 // =========================================
 
 async function createUniqueSession(
@@ -120,35 +128,64 @@ export default function Home() {
   // STATE
   // =========================================
 
-  const [showUsername, setShowUsername] =
-    useState(false);
+  const [
+    showUsername,
+    setShowUsername,
+  ] = useState(false);
 
-  const [mode, setMode] =
-    useState("create");
 
-  const [username, setUsername] =
-    useState("");
+  const [
+    mode,
+    setMode,
+  ] = useState("create");
 
-  const [chatName, setChatName] =
-    useState("");
 
-  const [sessionId, setSessionId] =
-    useState("");
+  const [
+    username,
+    setUsername,
+  ] = useState("");
 
-  const [creatorKey, setCreatorKey] =
-    useState("");
 
-  const [joinAsAdmin, setJoinAsAdmin] =
-    useState(false);
+  const [
+    chatName,
+    setChatName,
+  ] = useState("");
 
-  const [loading, setLoading] =
-    useState(false);
 
-  const [error, setError] =
-    useState("");
+  const [
+    sessionId,
+    setSessionId,
+  ] = useState("");
 
-  const [publicChats, setPublicChats] =
-    useState([]);
+
+  const [
+    creatorKey,
+    setCreatorKey,
+  ] = useState("");
+
+
+  const [
+    joinAsAdmin,
+    setJoinAsAdmin,
+  ] = useState(false);
+
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(false);
+
+
+  const [
+    error,
+    setError,
+  ] = useState("");
+
+
+  const [
+    publicChats,
+    setPublicChats,
+  ] = useState([]);
 
 
   // =========================================
@@ -166,7 +203,7 @@ export default function Home() {
 
 
   // =========================================
-  // LISTEN FOR PUBLIC CHATS
+  // PUBLIC CHATS
   // =========================================
 
   useEffect(() => {
@@ -200,16 +237,17 @@ export default function Home() {
 
           const chats =
             Object.entries(data)
-              .map(([roomId, chat]) => ({
+              .map(
+                ([roomId, chat]) => ({
+                  roomId,
+                  ...chat,
+                })
+              );
 
-                roomId,
 
-                ...chat,
-
-              }));
-
-
-          setPublicChats(chats);
+          setPublicChats(
+            chats
+          );
 
         },
 
@@ -243,17 +281,12 @@ export default function Home() {
     setError("");
 
     setUsername("");
-
     setChatName("");
-
     setSessionId("");
-
     setCreatorKey("");
 
     setJoinAsAdmin(false);
-
     setMode("create");
-
     setShowUsername(true);
 
   }
@@ -268,17 +301,12 @@ export default function Home() {
     setError("");
 
     setUsername("");
-
     setChatName("");
-
     setSessionId("");
-
     setCreatorKey("");
 
     setJoinAsAdmin(false);
-
     setMode("join");
-
     setShowUsername(true);
 
   }
@@ -361,24 +389,22 @@ export default function Home() {
     try {
 
       setLoading(true);
-
       setError("");
 
 
       // =====================================
-      // FIREBASE LOGIN
+      // LOGIN
       // =====================================
 
       const userCredential =
         await signInAnonymously(auth);
-
 
       const user =
         userCredential.user;
 
 
       // =====================================
-      // GENERATE CREATOR KEY
+      // CREATOR KEY
       // =====================================
 
       const newCreatorKey =
@@ -386,11 +412,10 @@ export default function Home() {
 
 
       // =====================================
-      // FIND UNIQUE ROOM
+      // CREATE UNIQUE ROOM
       // =====================================
 
       let roomId;
-
       let created = false;
 
 
@@ -448,7 +473,7 @@ export default function Home() {
 
 
       // =====================================
-      // SAVE CREATOR INFORMATION
+      // SAVE CREATOR SECRET
       // =====================================
 
       await set(
@@ -459,20 +484,18 @@ export default function Home() {
         ),
 
         {
-
           username:
             name,
 
           creatorKey:
             newCreatorKey,
-
         }
 
       );
 
 
       // =====================================
-      // SAVE LOCAL SESSION
+      // LOCAL SESSION
       // =====================================
 
       sessionStorage.setItem(
@@ -498,16 +521,14 @@ export default function Home() {
       );
 
 
-      // =====================================
-      // ENTER ROOM
-      // =====================================
-
       navigate(
         `/room/${roomId}`
       );
 
+    }
 
-    } catch (error) {
+
+    catch (error) {
 
       console.error(
         "Create session error:",
@@ -516,14 +537,14 @@ export default function Home() {
 
 
       setError(
-
         error.message ||
         "Could not create session."
-
       );
 
+    }
 
-    } finally {
+
+    finally {
 
       setLoading(false);
 
@@ -549,7 +570,7 @@ export default function Home() {
 
 
     // =====================================
-    // USERNAME VALIDATION
+    // USERNAME
     // =====================================
 
     if (!name) {
@@ -575,7 +596,7 @@ export default function Home() {
 
 
     // =====================================
-    // ROOM ID VALIDATION
+    // ROOM ID
     // =====================================
 
     if (!roomId) {
@@ -589,7 +610,11 @@ export default function Home() {
     }
 
 
-    if (!/^[A-Z0-9]{4}$/.test(roomId)) {
+    if (
+      !/^[A-Z0-9]{4}$/.test(
+        roomId
+      )
+    ) {
 
       setError(
         "Session ID must be 4 letters/numbers."
@@ -601,7 +626,7 @@ export default function Home() {
 
 
     // =====================================
-    // ADMIN INPUT VALIDATION
+    // CREATOR KEY
     // =====================================
 
     if (joinAsAdmin) {
@@ -637,32 +662,18 @@ export default function Home() {
     try {
 
       setLoading(true);
-
       setError("");
 
 
       // =====================================
-      // FIREBASE LOGIN
+      // LOGIN
       // =====================================
 
       const userCredential =
         await signInAnonymously(auth);
 
-
       const user =
         userCredential.user;
-
-
-      console.log(
-        "JOIN UID:",
-        user.uid
-      );
-
-
-      console.log(
-        "JOIN AS ADMIN:",
-        joinAsAdmin
-      );
 
 
       // =====================================
@@ -696,10 +707,12 @@ export default function Home() {
 
 
       // =====================================
-      // CHECK ACTIVE
+      // ACTIVE
       // =====================================
 
-      if (room.active === false) {
+      if (
+        room.active === false
+      ) {
 
         setError(
           "THIS SESSION HAS BEEN TERMINATED."
@@ -715,7 +728,6 @@ export default function Home() {
       // =====================================
 
       let isAdmin = false;
-
       let verifiedCreatorKey = "";
 
 
@@ -738,7 +750,7 @@ export default function Home() {
 
 
         // ===================================
-        // CREATE ADMIN CLAIM
+        // SUBMIT EXACT CREDENTIALS
         // ===================================
 
         try {
@@ -748,23 +760,21 @@ export default function Home() {
             claimRef,
 
             {
-
               username:
                 name,
 
               creatorKey:
                 enteredCreatorKey,
 
+              verified:
+                true,
             }
 
           );
 
+        }
 
-          console.log(
-            "ADMIN CLAIM ACCEPTED"
-          );
-
-        } catch (claimError) {
+        catch (claimError) {
 
           console.error(
             "ADMIN CLAIM REJECTED:",
@@ -782,21 +792,10 @@ export default function Home() {
 
 
         // ===================================
-        // TAKE ADMIN OWNERSHIP
+        // TAKE ADMIN ROLE
         // ===================================
 
         try {
-
-          /*
-           * IMPORTANT:
-           *
-           * We ONLY update adminUid here.
-           *
-           * Do NOT write adminUsername separately.
-           *
-           * Your Firebase rules already use
-           * adminUid as the actual ownership field.
-           */
 
           await set(
 
@@ -809,13 +808,9 @@ export default function Home() {
 
           );
 
+        }
 
-          console.log(
-            "ADMIN UID UPDATED"
-          );
-
-
-        } catch (adminError) {
+        catch (adminError) {
 
           console.error(
             "ADMIN UID UPDATE FAILED:",
@@ -829,18 +824,10 @@ export default function Home() {
               claimRef
             );
 
-          } catch (cleanupError) {
-
-            console.error(
-              "Claim cleanup error:",
-              cleanupError
-            );
-
-          }
-
+          } catch {}
 
           setError(
-            "COULD NOT TAKE ADMIN CONTROL. CHECK FIREBASE RULES."
+            "COULD NOT TAKE ADMIN CONTROL."
           );
 
           return;
@@ -849,7 +836,7 @@ export default function Home() {
 
 
         // ===================================
-        // ADMIN SUCCESS
+        // ADMIN VERIFIED
         // ===================================
 
         isAdmin = true;
@@ -859,7 +846,7 @@ export default function Home() {
 
 
         // ===================================
-        // REMOVE TEMPORARY CLAIM
+        // CLEANUP CLAIM
         // ===================================
 
         try {
@@ -881,7 +868,7 @@ export default function Home() {
 
 
       // =====================================
-      // ADD / UPDATE USER
+      // ADD USER
       // =====================================
 
       const userRef =
@@ -896,20 +883,18 @@ export default function Home() {
         userRef,
 
         {
-
           username:
             name,
 
           joinedAt:
             Date.now(),
-
         }
 
       );
 
 
       // =====================================
-      // SAVE LOCAL SESSION
+      // LOCAL SESSION
       // =====================================
 
       sessionStorage.setItem(
@@ -937,25 +922,14 @@ export default function Home() {
       );
 
 
-      console.log(
-        "JOIN SUCCESS:",
-        {
-          roomId,
-          isAdmin,
-        }
-      );
-
-
-      // =====================================
-      // ENTER ROOM
-      // =====================================
-
       navigate(
         `/room/${roomId}`
       );
 
+    }
 
-    } catch (error) {
+
+    catch (error) {
 
       console.error(
         "Join session error:",
@@ -963,27 +937,15 @@ export default function Home() {
       );
 
 
-      if (
-        error.code ===
-        "PERMISSION_DENIED"
-      ) {
+      setError(
+        error.message ||
+        "Could not join session."
+      );
 
-        setError(
-          "FIREBASE PERMISSION DENIED. CHECK YOUR DATABASE RULES."
-        );
+    }
 
-      } else {
 
-        setError(
-
-          error.message ||
-          "Could not join session."
-
-        );
-
-      }
-
-    } finally {
+    finally {
 
       setLoading(false);
 
@@ -1001,15 +963,11 @@ export default function Home() {
     setSessionId(roomId);
 
     setUsername("");
-
     setCreatorKey("");
 
     setJoinAsAdmin(false);
-
     setMode("join");
-
     setShowUsername(true);
-
     setError("");
 
   }
@@ -1024,19 +982,13 @@ export default function Home() {
     <div className="matrix-home">
 
 
-      {/* =====================================
-          LEFT SIDE
-      ===================================== */}
-
       <div className="home-left">
 
         <div className="matrix-content">
 
 
           <h1 className="matrix-title">
-
             CHATROOM
-
           </h1>
 
 
@@ -1047,20 +999,13 @@ export default function Home() {
 
             <>
 
-
-              {/* =============================
-                  CREATE
-              ============================= */}
-
               <div className="button-section">
 
                 <button
                   className="matrix-button"
                   onClick={createSession}
                 >
-
                   CREATE A SESSION
-
                 </button>
 
 
@@ -1075,19 +1020,13 @@ export default function Home() {
               </div>
 
 
-              {/* =============================
-                  JOIN
-              ============================= */}
-
               <div className="button-section">
 
                 <button
                   className="matrix-button"
                   onClick={joinSession}
                 >
-
                   JOIN A SESSION
-
                 </button>
 
 
@@ -1100,16 +1039,9 @@ export default function Home() {
 
               </div>
 
-
             </>
 
-
           ) : (
-
-
-            /* ===============================
-               FORM
-            =============================== */
 
             <div className="username-section">
 
@@ -1140,7 +1072,6 @@ export default function Home() {
 
                       or{" "}
 
-
                       <button
                         type="button"
                         className="back-button"
@@ -1164,34 +1095,22 @@ export default function Home() {
               </p>
 
 
-              {/* ===========================
-                  USERNAME
-              =========================== */}
-
               <input
-
                 className="matrix-input"
-
                 type="text"
-
                 placeholder="USERNAME"
-
                 value={username}
-
                 maxLength={30}
-
                 onChange={(e) =>
                   setUsername(
                     e.target.value
                   )
                 }
-
                 onKeyDown={(e) => {
 
                   if (e.key === "Enter") {
 
                     e.preventDefault();
-
 
                     if (
                       mode === "create"
@@ -1208,99 +1127,62 @@ export default function Home() {
                   }
 
                 }}
-
                 autoFocus
-
                 disabled={loading}
-
               />
 
-
-              {/* ===========================
-                  CREATE CHAT NAME
-              =========================== */}
 
               {mode === "create" && (
 
                 <input
-
                   ref={chatNameRef}
-
                   className="matrix-input"
-
                   type="text"
-
                   placeholder="CHAT NAME"
-
                   value={chatName}
-
                   maxLength={50}
-
                   onChange={(e) =>
                     setChatName(
                       e.target.value
                     )
                   }
-
                   onKeyDown={(e) => {
 
-                    if (
-                      e.key === "Enter"
-                    ) {
+                    if (e.key === "Enter") {
 
                       e.preventDefault();
-
                       confirmCreateSession();
 
                     }
 
                   }}
-
                   disabled={loading}
-
                 />
 
               )}
 
 
-              {/* ===========================
-                  JOIN SESSION ID
-              =========================== */}
-
               {mode === "join" && (
 
                 <input
-
                   ref={sessionIdRef}
-
                   className="matrix-input"
-
                   type="text"
-
                   placeholder="SESSION ID"
-
                   value={sessionId}
-
                   maxLength={4}
-
                   onChange={(e) =>
                     setSessionId(
                       e.target.value.toUpperCase()
                     )
                   }
-
                   onKeyDown={(e) => {
 
-                    if (
-                      e.key === "Enter"
-                    ) {
+                    if (e.key === "Enter") {
 
                       e.preventDefault();
 
-
-                      if (
-                        joinAsAdmin
-                      ) {
+                      if (joinAsAdmin) {
 
                         creatorKeyRef.current?.focus();
 
@@ -1313,97 +1195,60 @@ export default function Home() {
                     }
 
                   }}
-
                   disabled={loading}
-
                 />
 
               )}
 
-
-              {/* ===========================
-                  CREATOR KEY
-              =========================== */}
 
               {mode === "join" &&
                 joinAsAdmin && (
 
-                <input
-
-                  ref={creatorKeyRef}
-
-                  className="matrix-input"
-
-                  type="text"
-
-                  placeholder="CREATOR KEY"
-
-                  value={creatorKey}
-
-                  maxLength={4}
-
-                  onChange={(e) =>
-                    setCreatorKey(
-                      e.target.value.toUpperCase()
-                    )
-                  }
-
-                  onKeyDown={(e) => {
-
-                    if (
-                      e.key === "Enter"
-                    ) {
-
-                      e.preventDefault();
-
-                      confirmJoinSession();
-
+                  <input
+                    ref={creatorKeyRef}
+                    className="matrix-input"
+                    type="text"
+                    placeholder="CREATOR KEY"
+                    value={creatorKey}
+                    maxLength={4}
+                    onChange={(e) =>
+                      setCreatorKey(
+                        e.target.value.toUpperCase()
+                      )
                     }
+                    onKeyDown={(e) => {
 
-                  }}
+                      if (e.key === "Enter") {
 
-                  disabled={loading}
+                        e.preventDefault();
+                        confirmJoinSession();
 
-                />
+                      }
 
-              )}
+                    }}
+                    disabled={loading}
+                  />
 
+                )}
 
-              {/* ===========================
-                  ERROR
-              =========================== */}
 
               {error && (
 
                 <p className="error-message">
-
                   {error}
-
                 </p>
 
               )}
 
 
-              {/* ===========================
-                  ENTER CHAT
-              =========================== */}
-
               <button
-
                 className="matrix-button"
-
                 onClick={
-
                   mode === "create"
-
                     ? confirmCreateSession
-
                     : confirmJoinSession
-
                 }
-
                 disabled={loading}
-
               >
 
                 {loading
@@ -1413,38 +1258,22 @@ export default function Home() {
               </button>
 
 
-              {/* ===========================
-                  BACK
-              =========================== */}
-
               <button
-
                 className="back-button"
-
                 onClick={() => {
 
                   setShowUsername(false);
-
                   setUsername("");
-
                   setChatName("");
-
                   setSessionId("");
-
                   setCreatorKey("");
-
                   setJoinAsAdmin(false);
-
                   setError("");
 
                 }}
-
                 disabled={loading}
-
               >
-
                 ← BACK
-
               </button>
 
 
@@ -1457,17 +1286,10 @@ export default function Home() {
       </div>
 
 
-      {/* =====================================
-          RIGHT SIDE - PUBLIC CHATS
-      ===================================== */}
-
       <aside className="public-chats">
 
-
         <div className="public-title">
-
           PUBLIC CHATS
-
         </div>
 
 
@@ -1479,9 +1301,7 @@ export default function Home() {
           <div className="no-public-chats">
 
             &gt; NO PUBLIC CHATS
-
             <br />
-
             &gt; WAITING...
 
           </div>
@@ -1493,30 +1313,22 @@ export default function Home() {
             {publicChats.map((chat) => (
 
               <button
-
                 key={chat.roomId}
-
                 className="public-chat"
-
                 onClick={() =>
                   joinPublicChat(
                     chat.roomId
                   )
                 }
-
               >
 
                 <div className="public-chat-name">
-
                   &gt; {chat.chatName}
-
                 </div>
 
 
                 <div className="public-chat-id">
-
                   SESSION:{chat.roomId}
-
                 </div>
 
               </button>
@@ -1528,7 +1340,6 @@ export default function Home() {
         )}
 
       </aside>
-
 
     </div>
 

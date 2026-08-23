@@ -6,6 +6,9 @@ ChatRoom allows users to create temporary chat sessions, invite others using a s
 
 The project is designed around a simple terminal-inspired interface with a focus on minimalism, real-time communication, and easy session management.
 
+[deployed here](https://ameenhamdannediya.github.io/ChatRoom/) 
+
+
 ---
 
 ### Technology Stack

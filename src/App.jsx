@@ -13,7 +13,7 @@ function App() {
     <BrowserRouter>
       <Routes>
 
-        <Route  path="/"  element={<Home/>}   />
+        <Route  path="/ChatRoom"  element={<Home/>}   />
         <Route  path="/join"  element={<JoinSession />} />
         <Route path="/room/:roomId" element={<ChatRoom />} />
 

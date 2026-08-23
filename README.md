@@ -12,6 +12,24 @@ The project is designed around a simple terminal-inspired interface with a focus
 
 ### Session Management
 
+<<<<<<< HEAD
+=======
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+# ChatRoom
+
+A lightweight, real-time chatroom application built with React and Firebase.
+
+ChatRoom allows users to create temporary chat sessions, invite others using a short session ID, communicate in real time, and optionally publish rooms so they can be discovered directly from the home page.
+
+The project is designed around a simple terminal-inspired interface with a focus on minimalism, real-time communication, and easy session management.
+
+---
+
+## Features
+
+### Session Management
+
+>>>>>>> main
 - Create a new chat session
 - Automatically generate a unique 4-character session ID
 - Set a custom chat name

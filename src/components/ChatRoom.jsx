@@ -71,7 +71,7 @@ export default function ChatRoom() {
 
         if (!user) {
 
-          navigate("/");
+          navigate("/ChatRoom");
 
           return;
         }
@@ -88,7 +88,7 @@ export default function ChatRoom() {
 
         if (!storedData) {
 
-          navigate("/");
+          navigate("/ChatRoom");
 
           return;
         }
@@ -114,7 +114,7 @@ export default function ChatRoom() {
 
           console.error(error);
 
-          navigate("/");
+          navigate("/ChatRoom");
 
         }
 
@@ -164,7 +164,7 @@ export default function ChatRoom() {
               `chatroom_${roomId}`
             );
 
-            navigate("/");
+            navigate("/ChatRoom");
 
             return;
           }
@@ -193,7 +193,7 @@ export default function ChatRoom() {
               `chatroom_${roomId}`
             );
 
-            navigate("/");
+            navigate("/ChatRoom");
 
             return;
           }
@@ -553,7 +553,7 @@ export default function ChatRoom() {
     );
 
 
-    navigate("/");
+    navigate("/ChatRoom");
 
   }
 
@@ -623,7 +623,7 @@ export default function ChatRoom() {
       // GO HOME
       // =====================================
 
-      navigate("/");
+      navigate("/ChatRoom");
 
 
     } catch (error) {
